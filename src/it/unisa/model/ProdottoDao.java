@@ -35,42 +35,39 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 
 	@Override
 	public synchronized void doSave(ProdottoBean product) throws SQLException {
+	    Connection connection = null;
+	    PreparedStatement preparedStatement = null;
 
-		Connection connection = null;
-		PreparedStatement preparedStatement = null;
+	    String insertSQL = "INSERT INTO " + ProdottoDao.TABLE_NAME
+	            + " (NOME, PIATTAFORMA, DESCRIZIONE, PREZZO, QUANTITA, GENERE, DATA_USCITA, IN_VENDITA, IVA, IMMAGINE, DESCRIZIONE_DETTAGLIATA) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
-		String insertSQL = "INSERT INTO " + ProdottoDao.TABLE_NAME
-				+ " (NOME, PIATTAFORMA, DESCRIZIONE, PREZZO, QUANTITA, GENERE, DATA_USCITA, IN_VENDITA, IVA, IMMAGINE, DESCRIZIONE_DETTAGLIATA) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
+	    try {
+	        connection = ds.getConnection();
+	        connection.setAutoCommit(false);
+	        preparedStatement = connection.prepareStatement(insertSQL);
+	        preparedStatement.setString(1, sanitize(product.getNome()));
+	        preparedStatement.setString(2, sanitize(product.getPiattaforma()));
+	        preparedStatement.setString(3, sanitize(product.getDescrizione()));
+	        preparedStatement.setDouble(4, product.getPrezzo());
+	        preparedStatement.setInt(5, product.getQuantity());
+	        preparedStatement.setString(6, sanitize(product.getGenere()));
+	        preparedStatement.setString(7, sanitize(product.getDataUscita()));
+	        preparedStatement.setBoolean(8, product.isInVendita());
+	        preparedStatement.setString(9, sanitize(product.getIva()));
+	        preparedStatement.setString(10, sanitize(product.getImmagine()));
+	        preparedStatement.setString(11, sanitize(product.getDescrizioneDettagliata()));
 
-		try {
-			connection = ds.getConnection();
-			connection.setAutoCommit(false);
-			preparedStatement = connection.prepareStatement(insertSQL);
-			preparedStatement.setString(1, product.getNome());
-			preparedStatement.setString(2, product.getPiattaforma());
-			preparedStatement.setString(3, product.getDescrizione());
-			preparedStatement.setDouble(4, product.getPrezzo());
-			preparedStatement.setInt(5, product.getQuantity());
-			preparedStatement.setString(6,product.getGenere());
-			preparedStatement.setString(7, product.getDataUscita());
-			preparedStatement.setBoolean(8, product.isInVendita());
-			preparedStatement.setString(9, product.getIva());
-			preparedStatement.setString(10, product.getImmagine());
-			preparedStatement.setString(11, product.getDescrizioneDettagliata());
-
-
-			preparedStatement.executeUpdate();
-
-			connection.commit();
-		} finally {
-			try {
-				if (preparedStatement != null)
-					preparedStatement.close();
-			} finally {
-				if (connection != null)
-					connection.close();
-			}
-		}
+	        preparedStatement.executeUpdate();
+	        connection.commit();
+	    } finally {
+	        try {
+	            if (preparedStatement != null)
+	                preparedStatement.close();
+	        } finally {
+	            if (connection != null)
+	                connection.close();
+	        }
+	    }
 	}
 
 	@Override
@@ -320,7 +317,16 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 		}
 		return prodotti;
 	}
-	
-	
-
+	public static String sanitize(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#x27;")
+                .replace("/", "&#x2F;");
+    }
 }
