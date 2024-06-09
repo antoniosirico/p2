@@ -3,6 +3,8 @@ package it.unisa.control;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -19,45 +21,68 @@ import it.unisa.model.ProdottoDao;
  */
 @WebServlet("/home")
 public class HomeServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
- 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		ProdottoDao dao = new ProdottoDao();
-		
-		ArrayList<ArrayList<ProdottoBean>> categorie = new ArrayList<>();
-		String redirectedPage = request.getParameter("page");
-		
-		try {
-			ArrayList<ProdottoBean> PS5 = dao.doRetrieveByPiattaforma("PlayStation 5");
-			ArrayList<ProdottoBean> XboxSeries = dao.doRetrieveByPiattaforma("Xbox Series");
-			ArrayList<ProdottoBean> Switch = dao.doRetrieveByPiattaforma("Nintendo Switch");
-			ArrayList<ProdottoBean> PS4 = dao.doRetrieveByPiattaforma("PlayStation 4");
-			ArrayList<ProdottoBean> Xone = dao.doRetrieveByPiattaforma("Xbox One");
-			
-			categorie.add(PS5);
-			categorie.add(XboxSeries);
-			categorie.add(Switch);
-			categorie.add(PS4);
-			categorie.add(Xone);
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(HomeServlet.class.getName());
 
-			request.getSession().setAttribute("categorie", categorie);
-			
+    // Lista di pagine consentite
+    private static final String[] ALLOWED_PAGES = { "Home.jsp"};
 
-			
-		}catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
-		RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/" + redirectedPage);
-		dispatcher.forward(request, response);
-	}
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
+        ProdottoDao dao = new ProdottoDao();
+        
+        ArrayList<ArrayList<ProdottoBean>> categorie = new ArrayList<>();
+        String redirectedPage = request.getParameter("page");
 
+        // Logging del parametro page
+        LOGGER.log(Level.INFO, "Requested page: {0}", redirectedPage);
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		doGet(request, response);
-	}
+        // Validazione del parametro page
+        if (isAllowedPage(redirectedPage)) {
+            try {
+                ArrayList<ProdottoBean> PS5 = dao.doRetrieveByPiattaforma("PlayStation 5");
+                ArrayList<ProdottoBean> XboxSeries = dao.doRetrieveByPiattaforma("Xbox Series");
+                ArrayList<ProdottoBean> Switch = dao.doRetrieveByPiattaforma("Nintendo Switch");
+                ArrayList<ProdottoBean> PS4 = dao.doRetrieveByPiattaforma("PlayStation 4");
+                ArrayList<ProdottoBean> Xone = dao.doRetrieveByPiattaforma("Xbox One");
+                
+                categorie.add(PS5);
+                categorie.add(XboxSeries);
+                categorie.add(Switch);
+                categorie.add(PS4);
+                categorie.add(Xone);
 
+                request.getSession().setAttribute("categorie", categorie);
+                
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/" + redirectedPage);
+            dispatcher.forward(request, response);
+        } else {
+            // Logging del tentativo di accesso non autorizzato
+            LOGGER.log(Level.WARNING, "Unauthorized access attempt to page: {0}", redirectedPage);
+
+            // Se la pagina richiesta non è consentita, reindirizza alla homepage o a una pagina di errore
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato");
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
+    }
+
+    // Metodo per verificare se il file richiesto è consentito
+    private boolean isAllowedPage(String page) {
+        if (page == null) {
+            return false;
+        }
+        for (String allowedPage : ALLOWED_PAGES) {
+            if (page.equals(allowedPage)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
