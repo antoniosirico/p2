@@ -4,20 +4,18 @@
 function checkNomeCognome(inputtxt) {
 	var nome = /^[A-Za-z]+$/;
 	if(inputtxt.value.match(nome)) 
-		return true
+		return true;
 
 	return false;	
 }
 
-
 function checkEmail(inputtxt) {
-	var email = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+	var email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 	if(inputtxt.value.match(email)) 
 		return true;
 	
 	return false;	
 }
-
 
 function checkData(inputtxt) {
 	var data =  /^\d{1,2}-\d{1,2}-\d{4}$/;
@@ -27,7 +25,6 @@ function checkData(inputtxt) {
 	return false;	
 }
 
-
 function checkUserName(inputtxt) {
 	var userName = /^[A-Za-z0-9]+$/;
 	if(inputtxt.value.match(userName)) 
@@ -36,7 +33,6 @@ function checkUserName(inputtxt) {
 	return false;	
 }
 
-
 function checkPassword(inputtxt) {
 	var password = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 	if(inputtxt.value.match(password)) 
@@ -44,7 +40,6 @@ function checkPassword(inputtxt) {
 	
 	return false;	
 }
-
 
 function validate(obj) {	
 	var valid = true;	
@@ -107,13 +102,10 @@ function validate(obj) {
 			document.getElementById("errPass").innerHTML = "";
 		}			
 	
-	
 	if(valid)
 		obj.submit();	
 }
 
-
 function myFunction(x) {
   		x.style.background = "yellow";
-		}
-		
+}
